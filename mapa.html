@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Misión — Escape Room Algebraico</title>
+
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+
+    :root {
+      --bg:        #0a0c10;
+      --surface:   #0f1117;
+      --surface-2: #151820;
+      --border:    rgba(255,255,255,0.07);
+      --accent:    #38BDF8;
+      --accent-2:  #818CF8;
+      --gold:      #F59E0B;
+      --green:     #34D399;
+      --pink:      #F472B6;
+      --red:       #F87171;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --font-body: 'Satoshi', sans-serif;
+      --font-mono: 'Orbitron', monospace;
+      --radius:    12px;
+      --radius-lg: 20px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Fondo ─────────────────────────────────────────── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+        linear-gradient(90deg,rgba(56,189,248,0.03) 1px,transparent 1px);
+      background-size: 60px 60px; pointer-events: none;
+    }
+    .bg-glow {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 20%,rgba(56,189,248,0.05) 0%,transparent 60%),
+        radial-gradient(ellipse 60% 40% at 85% 80%,rgba(129,140,248,0.04) 0%,transparent 60%);
+      pointer-events: none;
+      animation: glow-pulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes glow-pulse { 0%{opacity:.6} 100%{opacity:1} }
+
+    /* ── Header ────────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      background: rgba(10,12,16,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .header-logo {
+      font-family: var(--font-mono); font-size: 0.8rem;
+      font-weight: 700; letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+    .header-sep {
+      width: 1px; height: 20px;
+      background: var(--border);
+    }
+    .header-title {
+      font-size: 0.82rem; color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* Reloj y progreso */
+    .header-right {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .clock-wrap {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .clock-icon { font-size: 0.9rem; }
+    #clock {
+      font-family: var(--font-mono); font-size: 0.95rem;
+      font-weight: 700; color: var(--green);
+      letter-spacing: 0.06em;
+      transition: color 0.3s ease;
+      min-width: 5ch;
+    }
+    #clock.warning { color: var(--gold); }
+    #clock.danger  { color: var(--red); animation: tick-danger 0.5s ease-in-out infinite alternate; }
+    @keyframes tick-danger { from{opacity:1} to{opacity:0.5} }
+
+    #penalizacion-txt {
+      font-size: 0.72rem; color: var(--red);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+    #penalizacion-txt.hidden { display: none; }
+
+    .progreso-wrap {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    #progress-txt {
+      font-family: var(--font-mono); font-size: 0.8rem;
+      color: var(--accent); font-weight: 700;
+    }
+    .barra-outer {
+      width: 80px; height: 6px;
+      background: var(--surface-2);
+      border-radius: 999px; overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+
+    /* ── Main ──────────────────────────────────────────── */
+    main {
+      position: relative; z-index: 1; flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 2rem 1.5rem 3rem;
+      gap: 2rem;
+    }
+
+    /* ── Título sección ────────────────────────────────── */
+    .mapa-header {
+      text-align: center;
+      animation: fade-up 0.6s ease both;
+    }
+    .mapa-eyebrow {
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.5rem;
+    }
+    .mapa-titulo {
+      font-family: var(--font-mono);
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 900; color: var(--text);
+    }
+    .mapa-sub {
+      margin-top: 0.4rem; font-size: 0.88rem; color: var(--muted);
+    }
+    @keyframes fade-up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Camino del mapa ───────────────────────────────── */
+    .mapa-path {
+      width: 100%; max-width: 720px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0;
+    }
+
+    /* Conector entre nodos */
+    .conector {
+      display: flex; align-items: center;
+      flex-direction: column;
+      gap: 0;
+    }
+    .conector-line {
+      width: 3px; height: 36px;
+      background: linear-gradient(180deg, var(--border) 0%, rgba(56,189,248,0.15) 100%);
+      border-radius: 2px;
+      transition: background 0.4s ease;
+    }
+    .conector-line.done {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
+      box-shadow: 0 0 8px rgba(56,189,248,0.3);
+    }
+    .conector-arrow {
+      font-size: 0.7rem; color: var(--muted);
+      transition: color 0.3s ease;
+    }
+    .conector-arrow.done { color: var(--accent); }
+
+    /* ── Nodo ──────────────────────────────────────────── */
+    .nodo-wrap {
+      width: 100%; max-width: 580px;
+      animation: fade-up 0.5s ease both;
+    }
+    .nodo-wrap:nth-child(1)  { animation-delay: 0.05s; }
+    .nodo-wrap:nth-child(3)  { animation-delay: 0.10s; }
+    .nodo-wrap:nth-child(5)  { animation-delay: 0.15s; }
+    .nodo-wrap:nth-child(7)  { animation-delay: 0.20s; }
+    .nodo-wrap:nth-child(9)  { animation-delay: 0.25s; }
+    .nodo-wrap:nth-child(11) { animation-delay: 0.30s; }
+
+    /* El <a> nodo */
+    a.nodo {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none; color: inherit;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+      cursor: default;
+      width: 100%;
+    }
+
+    /* ── Estado: bloqueado ── */
+    a.nodo.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+
+    /* ── Estado: disponible ── */
+    a.nodo.active-node {
+      border-color: rgba(56,189,248,0.4);
+      background: linear-gradient(135deg, rgba(56,189,248,0.04), rgba(129,140,248,0.03));
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(56,189,248,0.08), 0 4px 20px rgba(0,0,0,0.3);
+    }
+    a.nodo.active-node:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 45px rgba(56,189,248,0.2), 0 8px 32px rgba(0,0,0,0.4);
+      border-color: rgba(56,189,248,0.7);
+    }
+    a.nodo.active-node:active { transform: translateY(0); }
+
+    /* ── Estado: completado ── */
+    a.nodo.completed {
+      border-color: rgba(52,211,153,0.3);
+      background: linear-gradient(135deg, rgba(52,211,153,0.04), rgba(56,189,248,0.02));
+      cursor: pointer;
+      opacity: 0.85;
+    }
+    a.nodo.completed:hover {
+      transform: translateY(-2px);
+      border-color: rgba(52,211,153,0.6);
+      box-shadow: 0 0 25px rgba(52,211,153,0.12);
+      opacity: 1;
+    }
+
+    /* Icono del nodo */
+    .nodo-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px; border-radius: 14px;
+      font-size: 1.5rem; flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    a.nodo.active-node .nodo-icon {
+      background: rgba(56,189,248,0.1);
+      border-color: rgba(56,189,248,0.35);
+      box-shadow: 0 0 16px rgba(56,189,248,0.2);
+    }
+    a.nodo.completed .nodo-icon {
+      background: rgba(52,211,153,0.1);
+      border-color: rgba(52,211,153,0.35);
+    }
+
+    /* Contenido textual */
+    .nodo-content { flex: 1; min-width: 0; }
+    .nodo-eyebrow {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.2rem;
+    }
+    .nodo-titulo {
+      font-family: var(--font-mono); font-size: 0.9rem;
+      font-weight: 700; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nodo-formula {
+      font-size: 0.8rem; color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Badge de estado */
+    .nodo-status-label {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.25rem 0.7rem; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      white-space: nowrap; flex-shrink: 0;
+      border: 1px solid transparent;
+    }
+    .status-locked {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--border); color: var(--muted);
+    }
+    .status-active {
+      background: rgba(56,189,248,0.12);
+      border-color: rgba(56,189,248,0.3);
+      color: var(--accent);
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+    @keyframes pulse-badge {
+      0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.3)}
+      50%{box-shadow:0 0 0 6px rgba(56,189,248,0)}
+    }
+    .status-completed {
+      background: rgba(52,211,153,0.12);
+      border-color: rgba(52,211,153,0.3);
+      color: var(--green);
+    }
+
+    /* Flecha derecha */
+    .nodo-arrow {
+      font-size: 1.1rem; color: var(--muted);
+      flex-shrink: 0; opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    a.nodo.active-node .nodo-arrow,
+    a.nodo.completed   .nodo-arrow {
+      opacity: 1; color: var(--accent);
+    }
+    a.nodo:hover .nodo-arrow { transform: translateX(4px); }
+
+    /* ── Reto final especial ─────────────────────────── */
+    a.nodo[data-id="6"].active-node {
+      border-color: rgba(245,158,11,0.4);
+      background: linear-gradient(135deg,rgba(245,158,11,0.06),rgba(244,114,182,0.04));
+      box-shadow: 0 0 40px rgba(245,158,11,0.1);
+    }
+    a.nodo[data-id="6"].active-node .nodo-icon {
+      background: rgba(245,158,11,0.12);
+      border-color: rgba(245,158,11,0.4);
+      box-shadow: 0 0 20px rgba(245,158,11,0.2);
+    }
+    a.nodo[data-id="6"].active-node .nodo-status-label {
+      background: rgba(245,158,11,0.12);
+      border-color: rgba(245,158,11,0.35);
+      color: var(--gold);
+      animation: pulse-gold 2s ease-in-out infinite;
+    }
+    @keyframes pulse-gold {
+      0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.3)}
+      50%{box-shadow:0 0 0 6px rgba(245,158,11,0)}
+    }
+    a.nodo[data-id="6"].active-node .nodo-arrow { color: var(--gold); }
+
+    /* ── Tags de dificultad ─────────────────────────── */
+    .nodo-tags { display: flex; gap: 0.4rem; margin-top: 0.35rem; flex-wrap: wrap; }
+    .ntag {
+      padding: 0.1em 0.5em; border-radius: 4px;
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .ntag-green  { background:rgba(52,211,153,.12); color:var(--green); }
+    .ntag-gold   { background:rgba(245,158,11,.12); color:var(--gold); }
+    .ntag-pink   { background:rgba(244,114,182,.12);color:var(--pink); }
+    .ntag-purple { background:rgba(129,140,248,.12);color:var(--accent-2); }
+
+    /* ── Footer ─────────────────────────────────────── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 1rem;
+      font-size: 0.72rem; color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer span { color: var(--accent); }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 520px) {
+      .header-title { display: none; }
+      .nodo-formula { display: none; }
+      .nodo-tags    { display: none; }
+      .barra-outer  { width: 50px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="header-left">
+      <span class="header-logo">EAP·2026</span>
+      <div class="header-sep" aria-hidden="true"></div>
+      <span class="header-title">Mapa de Misión</span>
+    </div>
+    <div class="header-right">
+      <!-- Reloj -->
+      <div class="clock-wrap" aria-label="Tiempo restante">
+        <span class="clock-icon" aria-hidden="true">⏱</span>
+        <span id="clock" aria-live="polite">45:00</span>
+        <span id="penalizacion-txt" class="hidden" aria-live="assertive"></span>
+      </div>
+      <!-- Progreso -->
+      <div class="progreso-wrap" aria-label="Retos completados">
+        <div class="barra-outer">
+          <div id="progress-bar" role="progressbar"
+               aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        </div>
+        <span id="progress-txt">0/6</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <div class="mapa-header">
+      <p class="mapa-eyebrow">Ruta de misión</p>
+      <h1 class="mapa-titulo">SELECCIONA TU RETO</h1>
+      <p class="mapa-sub">Completa cada nivel en orden para desbloquear el siguiente</p>
+    </div>
+
+    <!-- ── CAMINO ── -->
+    <div class="mapa-path" role="list" aria-label="Retos del escape room">
+
+      <!-- RETO 1 -->
+      <div class="nodo-wrap" role="listitem">
+        <a id="nodo-1" class="nodo locked" data-id="1"
+           href="#" aria-label="Reto 1: El mural que nadie midió">
+          <div class="nodo-icon" aria-hidden="true">🎨</div>
+          <div class="nodo-content">
+            <p class="nodo-eyebrow">Nivel 1 · Cuadrado de suma</p>
+            <p class="nodo-titulo">El mural que nadie midió</p>
+            <p class="nodo-formula">(a+b)² = a² + 2ab + b²</p>
+            <div class="nodo-tags">
+              <span class="ntag ntag-green">Básico</span>
+              <span class="ntag ntag-purple">(a+b)²</span>
+            </div>
+          </div>
+          <span class="nodo-status-label status-locked" aria-label="Estado del reto">🔒 Bloqueado</span>
+          <span class="nodo-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <!-- Conector 1→2 -->
+      <div class="conector" id="conector-1" aria-hidden="true">
+        <div class="conector-line" id="line-1"></div>
+        <span class="conector-arrow" id="arrow-1">▼</span>
+        <div class="conector-line"></div>
+      </div>
+
+      <!-- RETO 2 -->
+      <div class="nodo-wrap" role="listitem">
+        <a id="nodo-2" class="nodo locked" data-id="2"
+           href="#" aria-label="Reto 2: El terreno que se recortó">
+          <div class="nodo-icon" aria-hidden="true">🌱</div>
+          <div class="nodo-content">
+            <p class="nodo-eyebrow">Nivel 2 · Cuadrado de diferencia</p>
+            <p class="nodo-titulo">El terreno que se recortó</p>
+            <p class="nodo-formula">(a−b)² = a² − 2ab + b²</p>
+            <div class="nodo-tags">
+              <span class="ntag ntag-green">Fácil</span>
+              <span class="ntag ntag-purple">(a−b)²</span>
+            </div>
+          </div>
+          <span class="nodo-status-label status-locked">🔒 Bloqueado</span>
+          <span class="nodo-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <!-- Conector 2→3 -->
+      <div class="conector" id="conector-2" aria-hidden="true">
+        <div class="conector-line" id="line-2"></div>
+        <span class="conector-arrow" id="arrow-2">▼</span>
+        <div class="conector-line"></div>
+      </div>
+
+      <!-- RETO 3 -->
+      <div class="nodo-wrap" role="listitem">
+        <a id="nodo-3" class="nodo locked" data-id="3"
+           href="#" aria-label="Reto 3: El contenedor de doble cara">
+          <div class="nodo-icon" aria-hidden="true">📦</div>
+          <div class="nodo-content">
+            <p class="nodo-eyebrow">Nivel 3 · Diferencia de cuadrados</p>
+            <p class="nodo-titulo">El contenedor de doble cara</p>
+            <p class="nodo-formula">(a+b)(a−b) = a² − b²</p>
+            <div class="nodo-tags">
+              <span class="ntag ntag-gold">Medio</span>
+              <span class="ntag ntag-purple">(a+b)(a−b)</span>
+            </div>
+          </div>
+          <span class="nodo-status-label status-locked">🔒 Bloqueado</span>
+          <span class="nodo-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <!-- Conector 3→4 -->
+      <div class="conector" id="conector-3" aria-hidden="true">
+        <div class="conector-line" id="line-3"></div>
+        <span class="conector-arrow" id="arrow-3">▼</span>
+        <div class="conector-line"></div>
+      </div>
+
+      <!-- RETO 4 -->
+      <div class="nodo-wrap" role="listitem">
+        <a id="nodo-4" class="nodo locked" data-id="4"
+           href="#" aria-label="Reto 4: El tanque de agua del colegio">
+          <div class="nodo-icon" aria-hidden="true">💧</div>
+          <div class="nodo-content">
+            <p class="nodo-eyebrow">Nivel 4 · Cubo de binomio</p>
+            <p class="nodo-titulo">El tanque de agua del colegio</p>
+            <p class="nodo-formula">(a+b)³ = a³ + 3a²b + 3ab² + b³</p>
+            <div class="nodo-tags">
+              <span class="ntag ntag-gold">Medio-alto</span>
+              <span class="ntag ntag-purple">(a+b)³</span>
+            </div>
+          </div>
+          <span class="nodo-status-label status-locked">🔒 Bloqueado</span>
+          <span class="nodo-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <!-- Conector 4→5 -->
+      <div class="conector" id="conector-4" aria-hidden="true">
+        <div class="conector-line" id="line-4"></div>
+        <span class="conector-arrow" id="arrow-4">▼</span>
+        <div class="conector-line"></div>
+      </div>
+
+      <!-- RETO 5 -->
+      <div class="nodo-wrap" role="listitem">
+        <a id="nodo-5" class="nodo locked" data-id="5"
+           href="#" aria-label="Reto 5: El festival de matemáticas">
+          <div class="nodo-icon" aria-hidden="true">🎪</div>
+          <div class="nodo-content">
+            <p class="nodo-eyebrow">Nivel 5 · Factorización compuesta</p>
+            <p class="nodo-titulo">El festival de matemáticas</p>
+            <p class="nodo-formula">Factor común + diferencia de cuadrados</p>
+            <div class="nodo-tags">
+              <span class="ntag ntag-pink">Alto</span>
+              <span class="ntag ntag-purple">Factor común</span>
+            </div>
+          </div>
+          <span class="nodo-status-label status-locked">🔒 Bloqueado</span>
+          <span class="nodo-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <!-- Conector 5→6 -->
+      <div class="conector" id="conector-5" aria-hidden="true">
+        <div class="conector-line" id="line-5"></div>
+        <span class="conector-arrow" id="arrow-5">▼</span>
+        <div class="conector-line"></div>
+      </div>
+
+      <!-- RETO 6 — MISIÓN FINAL -->
+      <div class="nodo-wrap" role="listitem">
+        <a id="nodo-6" class="nodo locked" data-id="6"
+           href="#" aria-label="Reto 6: La fórmula justa del sistema — Misión final">
+          <div class="nodo-icon" aria-hidden="true">⚡</div>
+          <div class="nodo-content">
+            <p class="nodo-eyebrow">Nivel 6 · Misión final · Experto</p>
+            <p class="nodo-titulo">La fórmula justa del sistema</p>
+            <p class="nodo-formula">Binomios con fracciones · Simplificación</p>
+            <div class="nodo-tags">
+              <span class="ntag ntag-pink">Experto</span>
+              <span class="ntag ntag-gold">Misión final</span>
+            </div>
+          </div>
+          <span class="nodo-status-label status-locked">🔒 Bloqueado</span>
+          <span class="nodo-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+    </div><!-- /.mapa-path -->
+  </main>
+
+  <footer>
+    Desarrollado por <span>Eduquemos con TIC</span> · Matemáticas 8° · 2026
+  </footer>
+
+  <script src="gameEngine.js" defer></script>
+
+  <!-- ── Lógica de desbloqueo garantizada ──
+       Este bloque se ejecuta DESPUÉS de que gameEngine.js llama initMapa().
+       Si gameEngine.js no está disponible, actúa como fallback autónomo.
+  ── -->
+  <script>
+    (function garantizarDesbloqueo() {
+      // Espera a que el DOM + gameEngine.js estén listos
+      document.addEventListener('DOMContentLoaded', function() {
+        // Pequeño delay para asegurar que initMapa() de gameEngine.js ya corrió
+        setTimeout(function() {
+
+          // ── Lee el estado desde sessionStorage (igual que gameEngine.js Parte 2) ──
+          let estado = {};
+          try {
+            const raw = sessionStorage.getItem('er-state');
+            if (raw) estado = JSON.parse(raw);
+          } catch(e) {}
+
+          const resueltos = Array.isArray(estado.resueltos) ? estado.resueltos : [];
+          const TOTAL     = 6;
+          const siguiente = resueltos.length + 1; // id del próximo reto disponible
+
+          for (let id = 1; id <= TOTAL; id++) {
+            const nodo  = document.getElementById('nodo-' + id);
+            if (!nodo) continue;
+
+            // Limpia clases previas
+            nodo.classList.remove('completed', 'active-node', 'locked');
+            const badge = nodo.querySelector('.nodo-status-label');
+
+            if (resueltos.includes(id)) {
+              // ── COMPLETADO ──
+              nodo.classList.add('completed');
+              nodo.href = 'reto.html?id=' + id;
+              nodo.removeAttribute('aria-disabled');
+              if (badge) {
+                badge.className = 'nodo-status-label status-completed';
+                badge.textContent = '✓ Completado';
+              }
+              // Conector previo se pone "done"
+              const lineEl  = document.getElementById('line-' + id);
+              const arrowEl = document.getElementById('arrow-' + id);
+              if (lineEl)  lineEl.classList.add('done');
+              if (arrowEl) arrowEl.classList.add('done');
+
+            } else if (id === siguiente) {
+              // ── DISPONIBLE ──
+              nodo.classList.add('active-node');
+              nodo.href = 'reto.html?id=' + id;
+              nodo.removeAttribute('aria-disabled');
+              nodo.style.cursor = 'pointer';
+              if (badge) {
+                badge.className = 'nodo-status-label status-active';
+                badge.textContent = id === 6 ? '🔓 ¡Misión final!' : '🔓 Disponible';
+              }
+
+            } else {
+              // ── BLOQUEADO ──
+              nodo.classList.add('locked');
+              nodo.href = '#';
+              nodo.setAttribute('aria-disabled', 'true');
+              nodo.style.cursor = 'not-allowed';
+              if (badge) {
+                badge.className = 'nodo-status-label status-locked';
+                badge.textContent = '🔒 Bloqueado';
+              }
+            }
+          }
+
+          // Si todos están resueltos → cierre automático
+          if (resueltos.length >= TOTAL) {
+            window.location.href = 'cierre.html';
+          }
+
+        }, 80); // 80ms de margen para que gameEngine.js corra primero
+      });
+    })();
+  </script>
+
+</body>
+</html>
