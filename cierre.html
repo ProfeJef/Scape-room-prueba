@@ -4,32 +4,25 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Misión Finalizada — Escape Room Algebraico</title>
-  
-  <!-- Referencia a tu hoja de estilos principal -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="cierre-body">
 
-  <!-- MODAL DE FELICITACIÓN -->
-  <div class="felicita-overlay" id="felicita-overlay" role="dialog" aria-modal="true" aria-labelledby="felicita-titulo">
-    <div class="felicita-box" tabindex="-1" id="felicita-box">
-      <span class="felicita-emoji" id="felicita-emoji" aria-hidden="true">🏆</span>
-      <h2 id="felicita-titulo">¡MISIÓN CUMPLIDA!</h2>
-      <p id="felicita-texto">
-        Tu capacidad de análisis algebraico ha restaurado el sistema.
-      </p>
+  <div class="felicita-overlay hidden" id="felicita-overlay" role="dialog" style="position:fixed; inset:0; z-index:200; background:rgba(15,23,42,0.95); display:flex; align-items:center; justify-content:center;">
+    <div class="felicita-box" tabindex="-1" id="felicita-box" style="background:var(--surface); border-radius:var(--radius-lg); padding:3rem; text-align:center;">
+      <span class="felicita-emoji" id="felicita-emoji" aria-hidden="true" style="font-size:4rem;">🏆</span>
+      <h2 id="felicita-titulo" style="color:var(--accent); margin-top:1rem;">¡MISIÓN CUMPLIDA!</h2>
+      <p id="felicita-texto" style="color:var(--text-muted); margin-bottom:2rem;">Tu capacidad de análisis ha restaurado el sistema.</p>
       <button class="btn btn-primary" id="btn-felicita-ok">Ver mi informe →</button>
     </div>
   </div>
 
-  <main>
-    <!-- CARD PRINCIPAL: estado de misión -->
+  <main style="width: 100%; max-width: 800px; display:flex; flex-direction:column; gap:1.5rem;">
     <div id="card-estado" class="cierre-card" role="main">
-      
       <div id="cierre-icon-nivel" aria-hidden="true" style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
       <p class="state-badge success">Evaluación del Sistema</p>
       <h1 class="main-title" id="cierre-nivel">Cargando...</h1>
-      <p class="cierre-message" id="cierre-mensaje">Obteniendo informe de desempeño...</p>
+      <p class="cierre-message" id="cierre-mensaje">Obteniendo informe...</p>
 
       <div class="stats">
         <div class="stat-card">
@@ -44,51 +37,19 @@
           <span class="label">Penalizaciones</span>
           <span class="value" id="cierre-penalizacion" style="color:var(--danger)">00:00</span>
         </div>
-        <div class="stat-card">
-          <span class="label">Fallos Previos</span>
-          <span class="value" id="cierre-fallos" style="color:var(--warn)">0</span>
-        </div>
       </div>
-
-      <div class="cierre-actions">
-        <button id="btn-reiniciar" class="btn btn-secondary">↺ Reiniciar misión</button>
-      </div>
-    
     </div>
 
-    <!-- CARD DE ESCALA Y RETROALIMENTACIÓN -->
-    <div class="cierre-card" style="margin-top: 1.5rem; text-align: left;">
-      <div style="border-bottom:1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
-        <h2 style="color: var(--accent); margin: 0; font-size: 1.1rem;">Informe Detallado de Desempeño</h2>
-      </div>
-
-      <!-- Barra de nivel -->
-      <div style="display:flex; gap:4px; margin-bottom:0.5rem; height:28px; border-radius:var(--radius-sm); overflow:hidden;">
-        <div class="nivel-seg seg-bajo" id="seg-bajo" style="background:var(--danger); flex:1; opacity:0.2; text-align:center; font-size: 0.75rem; font-weight:bold; color:#000; display:flex; align-items:center; justify-content:center;">BAJO</div>
-        <div class="nivel-seg seg-basico" id="seg-basico" style="background:var(--warn); flex:1; opacity:0.2; text-align:center; font-size: 0.75rem; font-weight:bold; color:#000; display:flex; align-items:center; justify-content:center;">BÁSICO</div>
-        <div class="nivel-seg seg-alto" id="seg-alto" style="background:var(--accent); flex:1; opacity:0.2; text-align:center; font-size: 0.75rem; font-weight:bold; color:#000; display:flex; align-items:center; justify-content:center;">ALTO</div>
-        <div class="nivel-seg seg-superior" id="seg-superior" style="background:var(--success); flex:1; opacity:0.2; text-align:center; font-size: 0.75rem; font-weight:bold; color:#000; display:flex; align-items:center; justify-content:center;">SUPERIOR</div>
-      </div>
-      <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:1.5rem;">
-        <span>0 – 1 retos</span>
-        <span>2 – 3 retos</span>
-        <span>4 – 5 retos</span>
-        <span>6 retos sin fallos</span>
-      </div>
-
-      <!-- Retroalimentación por reto -->
-      <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 1rem;">Desglose de operaciones</h3>
-      <ul id="retro-lista" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-        <!-- El gameEngine insertará aquí la lista detallada -->
+    <div class="cierre-card" style="text-align: left;">
+      <h2 style="color: var(--accent); font-size: 1.2rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">Desempeño Analítico</h2>
+      <ul id="retro-lista" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; margin-top:1.5rem;">
       </ul>
-
-      <div style="margin-top: 2rem; text-align: center;">
-        <button id="btn-reiniciar-2" class="btn btn-primary">↺ Iniciar nueva misión</button>
+      <div style="margin-top: 2.5rem; text-align: center;">
+        <button id="btn-reiniciar-2" class="btn btn-primary">↺ Volver a jugar</button>
       </div>
     </div>
   </main>
 
-  <!-- SCRIPT DEL MOTOR DEL JUEGO -->
-  <script src="gameEngine.js"></script>
+  <script src="js/gameEngine.js"></script>
 </body>
 </html>
