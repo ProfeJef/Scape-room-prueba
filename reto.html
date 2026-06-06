@@ -1,75 +1,142 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reto Activo — Escape Room</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reto Activo — Escape Room Algebraico</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Estilos base de tu diseño a 2 columnas */
+    :root {
+      --bg: #0B0E14; --surface: #111827; --surface-2: #1E293B; --border: #334155;
+      --accent: #38BDF8; --accent-2: #818CF8; --success: #34D399; --warn: #FBBF24; --danger: #F87171;
+      --text: #F8FAFC; --text-muted: #94A3B8; --radius-lg: 16px; --radius-md: 12px;
+      font-family: 'Inter', sans-serif;
+    }
+    body { background-color: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Top Bar */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .brand-logo { font-family: 'Space Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; }
+    .brand-subtitle { color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 400; }
+    .top-stats { display: flex; gap: 1.5rem; align-items: center; }
+    .timer-badge { display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); padding: 0.5rem 1rem; border-radius: 99px; font-family: 'Space Mono', monospace; font-weight: 700; }
+    
+    /* Grid de Layout Principal (2 Columnas) */
+    .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; max-width: 1400px; margin: 0 auto; padding: 2rem; flex: 1; align-items: start; }
+    @media (max-width: 992px) { .layout-grid { grid-template-columns: 1fr; } }
+    
+    /* Panel Izquierdo (El Reto) */
+    .reto-main { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; }
+    .reto-eyebrow { color: var(--accent); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .reto-titulo { font-size: 1.8rem; margin: 0 0 1rem 0; line-height: 1.2; }
+    .reto-tags { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tag { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; border: 1px solid transparent; }
+    .tag-green { background: rgba(52,211,153,0.1); color: var(--success); border-color: rgba(52,211,153,0.2); }
+    .tag-purple { background: rgba(129,140,248,0.1); color: var(--accent-2); border-color: rgba(129,140,248,0.2); }
+    .tag-gold { background: rgba(251,191,36,0.1); color: var(--warn); border-color: rgba(251,191,36,0.2); }
+    .reto-narrativa { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .reto-enunciado-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; font-weight: 500; margin-bottom: 2rem; }
+    
+    /* Panel Derecho (Estado de Misión) */
+    .mission-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; position: sticky; top: 2rem; }
+    .panel-title { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin: 0 0 1.5rem 0; }
+    .mission-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; text-align: center; }
+    .stat-value { display: block; font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 0.25rem; }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+    .hint-box { background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.2); border-radius: var(--radius-md); padding: 1rem; font-size: 0.85rem; color: var(--warn); line-height: 1.5; }
+    
+    /* Opciones y validación inyectadas por JS */
+    .opcion-pro-inner { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 0.75rem; cursor: pointer; transition: all 0.2s; }
+    .opcion-pro-inner:hover { border-color: var(--accent-2); }
+    .radio-oculto:checked + .opcion-pro-inner { border-color: var(--accent); background: rgba(56,189,248,0.05); }
+    .opcion-letra { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; font-weight: 700; color: var(--text-muted); }
+    .radio-oculto:checked + .opcion-pro-inner .opcion-letra { background: var(--accent); color: #000; }
+    .radio-oculto { display: none; }
+    .btn-validar { width: 100%; padding: 1rem; border-radius: var(--radius-md); background: var(--accent); color: #000; font-weight: 700; border: none; cursor: pointer; margin-top: 1rem; }
+  </style>
 </head>
-<body class="reto-body">
+<body>
 
-  <nav class="navbar">
-    <div class="navbar-inner">
-      <div class="progress-wrap">
-        <div class="clock" id="clock">45:00</div>
-        <span id="penalizacion-txt" class="hidden"></span>
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="brand-logo">
+      EAP-2026 <span class="brand-subtitle">Panel de resolución</span>
+    </div>
+    <div class="top-stats">
+      <div class="timer-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span id="clock">45:00</span>
+        <span id="penalizacion-txt" class="hidden" style="color:var(--danger); font-size:0.8rem; margin-left:0.5rem;"></span>
       </div>
-      <div class="progress-wrap" style="justify-content: flex-end;">
-        <span class="progress-txt">PROGRESO <span id="progress-txt">0/6</span></span>
-        <div class="progress">
-          <div class="progress-bar" id="progress-bar"></div>
-        </div>
+      <div class="timer-badge" style="color: var(--accent);">
+        <span id="progress-txt">0/6</span>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <main class="reto-shell">
-    <div class="reto-content">
-      <article class="reto-card" aria-labelledby="reto-titulo">
-        
-        <header class="reto-header">
-          <p class="reto-eyebrow" id="reto-eyebrow"></p>
-          <h1 id="reto-titulo"></h1>
-          <div class="reto-tags" id="reto-tags"></div>
-        </header>
-
-        <div class="reto-narrativa" id="reto-narrativa" style="margin-top: 1rem; padding: 1.2rem; background: var(--surface-2); border-radius: var(--radius-md); border-left: 3px solid var(--accent); color: var(--text-muted);"></div>
-
-        <div style="height:1px; background:var(--border); margin: 1.5rem 0;"></div>
-
-        <div id="reto-enunciado" style="font-weight: 700; font-size: 1.1rem; color: var(--text);"></div>
-        
-        <!-- GameEngine inyecta las opciones aquí -->
-        <div id="opciones-container" class="opciones" style="margin-top: 1.5rem;"></div>
-
-        <div class="reto-actions" style="margin-top: 2rem; display: flex; flex-direction: column; align-items: stretch; gap: 0.5rem;">
-          <button id="btn-validar" class="btn btn-primary pulse">Validar Respuesta</button>
+  <!-- MAIN LAYOUT -->
+  <main class="layout-grid">
+    
+    <!-- COLUMNA IZQUIERDA: EL RETO -->
+    <section class="reto-main">
+      <p class="reto-eyebrow" id="reto-eyebrow"></p>
+      <h1 class="reto-titulo" id="reto-titulo"></h1>
+      <div class="reto-tags" id="reto-tags"></div>
+      
+      <p class="reto-narrativa" id="reto-narrativa"></p>
+      <div class="reto-enunciado-box" id="reto-enunciado"></div>
+      
+      <!-- Opciones inyectadas por JS -->
+      <div id="opciones-container"></div>
+      
+      <button class="btn-validar pulse" id="btn-validar">Validar Respuesta</button>
+      
+      <!-- Contenedor de Alertas de Intentos / Feedback JS -->
+      <div id="feedback-container" class="hidden" style="margin-top: 1rem; padding: 1rem; border-radius: var(--radius-md);">
+        <div style="display:flex; align-items:center; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <span id="feedback-icon" style="font-size:1.2rem;"></span>
+          <h3 id="feedback-title" style="margin:0; font-size:1rem;"></h3>
         </div>
+        <p id="feedback-body" style="margin:0; font-size:0.9rem; color:var(--text-muted);"></p>
+        <a href="#" id="btn-next" class="hidden" style="display:inline-block; margin-top:1rem; padding: 0.5rem 1rem; background:var(--surface-2); color:white; border-radius:8px; text-decoration:none;">Siguiente reto →</a>
+      </div>
+    </section>
 
-        <div id="feedback-container" class="feedback-container hidden" aria-live="polite" style="display:flex; align-items:flex-start; margin-top:1.5rem;">
-          <div class="feedback-icon" id="feedback-icon" style="font-size: 1.8rem; margin-right: 1rem;"></div>
-          <div class="feedback-content">
-            <h3 id="feedback-title" style="margin: 0 0 0.25rem 0; font-size: 1.1rem;"></h3>
-            <p id="feedback-body" style="margin: 0; color: var(--text-muted); font-size: 0.95rem;"></p>
-            <a href="#" id="btn-next" class="btn btn-secondary hidden" style="margin-top:1.2rem; text-decoration:none; display:inline-block;">Siguiente reto →</a>
-          </div>
+    <!-- COLUMNA DERECHA: ESTADO DE MISIÓN -->
+    <aside class="mission-panel">
+      <h2 class="panel-title">Estado de Misión</h2>
+      <div class="mission-stats">
+        <div class="stat-box">
+          <span class="stat-value">1/6</span>
+          <span class="stat-label">Reto Actual</span>
         </div>
+        <div class="stat-box">
+          <span class="stat-value" style="color: var(--accent-2);">Selección</span>
+          <span class="stat-label">Modalidad</span>
+        </div>
+      </div>
+      <div class="hint-box">
+        <strong>Pista:</strong> En el cuadrado de un binomio siempre aparece el término central <em>2ab</em>.
+      </div>
+    </aside>
 
-      </article>
-    </div>
   </main>
 
   <!-- Overlay Victoria Reto 6 -->
-  <div class="victory-overlay hidden" id="victory-overlay" role="dialog" style="position:fixed; inset:0; z-index:200; background:rgba(15,23,42,0.95); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;">
-    <div class="victory-content" tabindex="-1" style="background:var(--surface); border:1px solid var(--accent); border-radius:var(--radius-lg); padding:3rem; text-align:center; max-width:500px; width:90%;">
-      <div class="victory-icon" aria-hidden="true" style="font-size:4rem; margin-bottom:1rem;">⚡</div>
-      <h2 class="victory-title" style="font-size:1.8rem; color:var(--accent); font-weight:800; margin:0 0 0.5rem 0;">SISTEMA RESTAURADO</h2>
-      <p class="victory-sub" style="color:var(--success); font-weight:700; margin:0 0 1.5rem 0;">Código validado con éxito</p>
-      <p class="victory-msg" style="color:var(--text-muted); margin-bottom:2rem;">Has liberado el algoritmo. La comunidad escolar puede acceder a sus derechos nuevamente.</p>
-      <button class="btn btn-primary" id="btn-al-cierre">Ver resultados finales →</button>
+  <div class="hidden" id="victory-overlay" style="position:fixed; inset:0; z-index:200; background:rgba(11,14,20,0.95); display:flex; align-items:center; justify-content:center;">
+    <div tabindex="-1" style="background:var(--surface); border:1px solid var(--accent); border-radius:var(--radius-lg); padding:3rem; text-align:center; max-width:500px; width:90%;">
+      <div style="font-size:4rem; margin-bottom:1rem;">⚡</div>
+      <h2 style="font-size:1.8rem; color:var(--accent); font-weight:800; margin:0 0 0.5rem 0;">SISTEMA RESTAURADO</h2>
+      <p style="color:var(--success); font-weight:700; margin:0 0 1.5rem 0;">Código validado con éxito</p>
+      <button id="btn-al-cierre" style="padding: 1rem 2rem; border-radius: 8px; background: var(--accent); border: none; font-weight: 700; cursor:pointer;">Ver resultados finales →</button>
     </div>
   </div>
 
+  <!-- CONEXIÓN AL MOTOR -->
   <script src="js/gameEngine.js"></script>
 </body>
 </html>
