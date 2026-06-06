@@ -274,9 +274,20 @@
     const getParam = (key) => new URLSearchParams(window.location.search).get(key);
 
     function loadState(){
-      try { return JSON.parse(sessionStorage.getItem('er-state')) || {startTime:Date.now(),resueltos:[],penalizacion:0,intentosPorReto:{}}; }
-      catch(e){ return {startTime:Date.now(),resueltos:[],penalizacion:0,intentosPorReto:{}}; }
+      let st = null;
+      try {
+        const saved = sessionStorage.getItem('er-state');
+        if (saved) st = JSON.parse(saved);
+      } catch(e) {}
+      
+      // Si el estado está vacío lo genera para no arrojar errores
+      if (!st || !st.startTime) {
+        st = { startTime: Date.now(), resueltos: [], penalizacion: 0, intentosPorReto: {} };
+        sessionStorage.setItem('er-state', JSON.stringify(st));
+      }
+      return st;
     }
+
     function saveState(state){ sessionStorage.setItem('er-state', JSON.stringify(state)); }
     function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
     function getTiempoRestante(){ const st=loadState(); const elapsed=Math.floor((Date.now()-st.startTime)/1000); return Math.max(0, DURATION_SEC - elapsed - (st.penalizacion||0)); }
@@ -290,7 +301,6 @@
         if(remaining <= 60) clock.classList.add('danger');
         else if(remaining <= 300) clock.classList.add('warning');
         
-        // Agregar visualizador de penalización al reloj original
         const st = loadState();
         if(st.penalizacion > 0 && !$('pen-txt')) {
             clock.insertAdjacentHTML('afterend', `<span id="pen-txt" style="color:var(--red); font-size:0.75rem; margin-left:8px;">-${formatTime(st.penalizacion)}</span>`);
@@ -456,8 +466,8 @@
       }
 
       btnValidar.disabled = true;
-      $('btn-mapa').onclick = () => { window.location.href = 'mapa.html'; };
 
+      // ---- CORRECCIÓN AQUÍ: SE BORRÓ EL VÍNCULO AL BOTÓN FANTASMA ----
       btnValidar.onclick = () => {
         if(yaRespondio) return;
         let esCorrecto = false;
@@ -521,7 +531,6 @@
             btnSiguiente.onclick = () => window.location.href = 'mapa.html';
           }
         } else {
-          // --- AQUÍ ESTÁ INTEGRADA LA PENALIZACIÓN EN EL DISEÑO ---
           const r = registrarIntentoFallido(reto.id);
           let aviso = '';
           
@@ -539,8 +548,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      const st = loadState();
-      if(!st.startTime) { window.location.href = 'index.html'; return; }
       startClock();
       renderReto();
     });
