@@ -7,58 +7,11 @@
   
   <!-- Referencia a tu hoja de estilos principal -->
   <link rel="stylesheet" href="styles.css" />
-  
-  <style>
-    /* Estilos extra mínimos solo para el layout interno del feedback y el overlay de victoria */
-    .feedback-container {
-      display: none;
-      align-items: flex-start;
-      margin-top: 1.5rem;
-    }
-    .feedback-container.visible {
-      display: flex;
-    }
-    .reto-narrativa {
-      margin-top: 1rem;
-      padding: 1.2rem;
-      background: var(--surface-2);
-      border-radius: var(--radius-md);
-      border-left: 3px solid var(--accent);
-      color: var(--text-muted);
-    }
-    .reto-narrativa strong { color: var(--text); }
-    .reto-narrativa em { color: var(--accent-2); font-style: normal; }
-    
-    /* Animación pulso para el botón validar */
-    .pulse { animation: pulse 2s infinite; }
-    @keyframes pulse {
-      0%   { transform: scale(1); }
-      50%  { transform: scale(1.03); }
-      100% { transform: scale(1); }
-    }
-    
-    /* Overlay de victoria para el reto 6 */
-    .victory-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(15,23,42,0.95); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .victory-overlay.hidden { display: none !important; }
-    .victory-content {
-      background: var(--surface); border: 1px solid var(--accent);
-      border-radius: var(--radius-lg); padding: 3rem; text-align: center;
-      max-width: 500px; width: 90%; box-shadow: 0 0 40px rgba(56,189,248,0.2);
-    }
-    .victory-icon { font-size: 4rem; margin-bottom: 1rem; }
-    .victory-title { font-size: 1.8rem; color: var(--accent); font-weight: 800; margin: 0 0 0.5rem 0; }
-    .victory-sub { color: var(--success); font-weight: 700; margin: 0 0 1.5rem 0; }
-    .victory-msg { color: var(--text-muted); margin-bottom: 2rem; }
-  </style>
 </head>
 <body class="reto-body">
 
   <!-- NAVBAR / RELOJ -->
-  <header class="navbar">
+  <nav class="navbar">
     <div class="navbar-inner">
       <div class="progress-wrap">
         <div class="clock" id="clock">45:00</div>
@@ -72,7 +25,7 @@
         </div>
       </div>
     </div>
-  </header>
+  </nav>
 
   <main class="reto-shell">
     <div class="reto-content">
@@ -80,7 +33,7 @@
       <article class="reto-card" aria-labelledby="reto-titulo">
         
         <!-- Cabecera del reto: Nivel, Título y Tags -->
-        <header style="display:flex; flex-direction:column; gap:0.5rem;">
+        <header class="reto-header">
           <p class="reto-eyebrow" id="reto-eyebrow"></p>
           <h1 id="reto-titulo"></h1>
           <div class="reto-tags" id="reto-tags"></div>
@@ -89,12 +42,8 @@
         <!-- Historia o narrativa -->
         <div class="reto-narrativa" id="reto-narrativa"></div>
 
-        <div style="height:1px; background:var(--border); margin: 1.5rem 0;"></div>
-
         <!-- La pregunta principal -->
         <div id="reto-enunciado"></div>
-        
-        <!-- Aquí gameEngine.js inyectará el historial de fallos ("Llevas X intentos...") si los hay -->
         
         <!-- Contenedor donde JS inyectará las opciones (A, B, C, D o las de arrastrar) -->
         <div id="opciones-container" class="opciones" style="margin-top: 1.5rem;"></div>
@@ -119,6 +68,17 @@
 
     </div>
   </main>
+
+  <!-- Overlay de Victoria (Para el Nivel 6) -->
+  <div class="victory-overlay hidden" id="victory-overlay" role="dialog">
+    <div class="victory-content" tabindex="-1">
+      <div class="victory-icon" aria-hidden="true">⚡</div>
+      <h2 class="victory-title">SISTEMA RESTAURADO</h2>
+      <p class="victory-sub">Código validado con éxito</p>
+      <p class="victory-msg">Has liberado el algoritmo. La comunidad escolar puede acceder a sus derechos nuevamente.</p>
+      <button class="btn btn-primary" id="btn-al-cierre">Ver resultados finales →</button>
+    </div>
+  </div>
 
   <!-- MOTOR DEL JUEGO -->
   <script src="gameEngine.js"></script>
