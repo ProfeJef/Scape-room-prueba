@@ -267,7 +267,6 @@
     // ─── 2. SISTEMA DE JUEGO BASE ───
     const TOTAL_RETOS = RETOS.length;
     const DURATION_SEC = 45 * 60;
-    const PENALIZACION_SEG = 2 * 60;
     const MAX_INTENTOS = 3;
 
     const $ = (id) => document.getElementById(id);
@@ -280,9 +279,8 @@
         if (saved) st = JSON.parse(saved);
       } catch(e) {}
       
-      // Si el estado está vacío lo genera para no arrojar errores
       if (!st || !st.startTime) {
-        st = { startTime: Date.now(), resueltos: [], penalizacion: 0, intentosPorReto: {} };
+        st = { startTime: Date.now(), resueltos: [], penalizacion: 0, totalErrores: 0, intentosPorReto: {} };
         sessionStorage.setItem('er-state', JSON.stringify(st));
       }
       return st;
@@ -328,21 +326,26 @@
       }
     }
 
-    // ─── 3. LÓGICA DE PENALIZACIÓN ───
+    // ─── 3. NUEVA LÓGICA DE PENALIZACIÓN (5 min / 10 min) ───
     function registrarIntentoFallido(retoId){
       const st = loadState();
       st.intentosPorReto = st.intentosPorReto || {};
+      st.totalErrores = (st.totalErrores || 0) + 1; // Contador global de todos los errores para el cierre
       st.intentosPorReto[retoId] = (st.intentosPorReto[retoId] || 0) + 1;
-      let penalizado = false;
+      
       let intentosActuales = st.intentosPorReto[retoId];
+      let penSeg = 0;
+      
       if(intentosActuales >= MAX_INTENTOS){
-        st.penalizacion = (st.penalizacion || 0) + PENALIZACION_SEG;
-        st.intentosPorReto[retoId] = 0;
-        intentosActuales = 0;
-        penalizado = true;
+        penSeg = 10 * 60; // 10 minutos al 3er error
+        st.intentosPorReto[retoId] = 0; // Reinicia el contador de ese reto
+      } else {
+        penSeg = 5 * 60; // 5 minutos al 1er y 2do error
       }
+      
+      st.penalizacion = (st.penalizacion || 0) + penSeg;
       saveState(st);
-      return { penalizado, intentosActuales };
+      return { penSeg, intentosActuales };
     }
 
     function marcarResuelto(retoId){
@@ -398,7 +401,6 @@
         });
         opcionesEl.addEventListener('change', (e)=>{ if(e.target.matches('input[type="radio"]')) btnValidar.disabled = false; }, {once:false});
       }
-
       else if(reto.tipo === 2){
         let dragHTML = `<div class="drop-area" id="zona-drop">Arrastra la opción correcta AQUÍ</div><div class="drag-items-container">`;
         reto.opciones.forEach((o, idx) => {
@@ -432,7 +434,6 @@
           btnValidar.disabled = false;
         });
       }
-
       else if(reto.tipo === 3){
         reto.opciones.forEach((o, idx) => {
           opcionesEl.insertAdjacentHTML('beforeend', `
@@ -449,12 +450,10 @@
           if(e.target.matches('.input-correcto')) btnValidar.disabled = false;
         }, {once:false});
       }
-
       else if(reto.tipo === 5){
         opcionesEl.innerHTML = `<input type="text" id="input-respuesta-abierta" placeholder="Ej: 2x(5x+6)(5x-6)">`;
         $('input-respuesta-abierta').addEventListener('input', e => { btnValidar.disabled = e.target.value.trim().length === 0; });
       }
-
       else if(reto.tipo === 6){
         let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem">`;
         reto.opciones.forEach(o => {
@@ -467,7 +466,6 @@
 
       btnValidar.disabled = true;
 
-      // ---- CORRECCIÓN AQUÍ: SE BORRÓ EL VÍNCULO AL BOTÓN FANTASMA ----
       btnValidar.onclick = () => {
         if(yaRespondio) return;
         let esCorrecto = false;
@@ -531,15 +529,18 @@
             btnSiguiente.onclick = () => window.location.href = 'mapa.html';
           }
         } else {
+          // --- AQUÍ ESTÁN LAS ADVERTENCIAS DE TIEMPO AJUSTADAS ---
           const r = registrarIntentoFallido(reto.id);
+          let penMin = r.penSeg / 60;
           let aviso = '';
           
-          if(r.penalizado) {
-              aviso = `<div style="margin-top:10px; color:var(--red); font-weight:bold;">¡ALERTA! Te han penalizado con -2:00 por 3 intentos fallidos.</div>`;
-          } else if (MAX_INTENTOS - r.intentosActuales === 1) {
-              aviso = `<div style="margin-top:10px; color:var(--gold); font-weight:bold;">Último intento. Si fallas se restarán 2 minutos.</div>`;
+          if(r.penSeg === 600) { // 10 minutos (3er error)
+              aviso = `<div style="margin-top:10px; color:var(--red); font-weight:bold;">¡ERROR CRÍTICO! 3 intentos fallidos en este reto. Penalización mayor: -10:00 minutos.</div>`;
           } else {
-              aviso = `<div style="margin-top:10px; color:var(--muted);">Llevas ${r.intentosActuales} intento(s) fallido(s). Penalización al 3.º error.</div>`;
+              aviso = `<div style="margin-top:10px; color:var(--red); font-weight:bold;">¡ALERTA! Has cometido un error. Penalización: -5:00 minutos.</div>`;
+              if (MAX_INTENTOS - r.intentosActuales === 1) {
+                  aviso += `<div style="margin-top:5px; color:var(--gold); font-size:0.85rem;">Cuidado: Tu próximo fallo restará 10 minutos adicionales. Piensa antes de validar.</div>`;
+              }
           }
           
           mostrarFeedback(false, feedbackTexto + aviso);
