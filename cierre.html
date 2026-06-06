@@ -1,55 +1,111 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Misión Finalizada — Escape Room Algebraico</title>
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body class="cierre-body">
 
-  <div class="felicita-overlay hidden" id="felicita-overlay" role="dialog" style="position:fixed; inset:0; z-index:200; background:rgba(15,23,42,0.95); display:flex; align-items:center; justify-content:center;">
-    <div class="felicita-box" tabindex="-1" id="felicita-box" style="background:var(--surface); border-radius:var(--radius-lg); padding:3rem; text-align:center;">
-      <span class="felicita-emoji" id="felicita-emoji" aria-hidden="true" style="font-size:4rem;">🏆</span>
-      <h2 id="felicita-titulo" style="color:var(--accent); margin-top:1rem;">¡MISIÓN CUMPLIDA!</h2>
-      <p id="felicita-texto" style="color:var(--text-muted); margin-bottom:2rem;">Tu capacidad de análisis ha restaurado el sistema.</p>
-      <button class="btn btn-primary" id="btn-felicita-ok">Ver mi informe →</button>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    :root {
+      --bg:#0a0c10; --surface:#0f1117; --surface-2:#151820; --border:rgba(255,255,255,.07);
+      --accent:#38BDF8; --accent-2:#818CF8; --gold:#F59E0B; --green:#34D399; --pink:#F472B6; --red:#F87171;
+      --text:#e2e8f0; --muted:#64748b; --font-body:'Satoshi',sans-serif; --font-mono:'Orbitron',monospace;
+      --radius:12px; --radius-lg:20px;
+    }
+    body { font-family:var(--font-body); background:var(--bg); color:var(--text); min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 2rem; overflow-x:hidden; }
+    
+    .bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    
+    .cierre-box { position:relative; z-index:1; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:3rem; max-width:600px; width:100%; text-align:center; box-shadow:0 0 50px rgba(56,189,248,.05),0 20px 50px rgba(0,0,0,.5); }
+    
+    .icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .sub { font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 0.5rem; }
+    .titulo { font-family: var(--font-mono); font-size: 2.2rem; color: var(--text); margin-bottom: 1.5rem; line-height: 1.1; }
+    .msg { color: var(--muted); font-size: 1.05rem; margin-bottom: 2.5rem; line-height: 1.6; }
+    
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2.5rem; }
+    .stat-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+    .stat-val { font-family: var(--font-mono); font-size: 1.8rem; color: var(--text); margin-bottom: 0.3rem; }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    
+    .btn-reiniciar { background: linear-gradient(135deg, var(--accent), #0ea5e9); color: #000; font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; border: none; padding: 1.2rem 2.5rem; border-radius: 14px; cursor: pointer; transition: 0.2s ease; letter-spacing: 0.05em; }
+    .btn-reiniciar:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(56,189,248,.2); }
+  </style>
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="cierre-box">
+    <div class="icon" id="c-icon">🏆</div>
+    <div class="sub">Evaluación del Sistema</div>
+    <h1 class="titulo" id="c-nivel">Calculando...</h1>
+    <p class="msg" id="c-msg"></p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="c-resueltos" style="color: var(--green);">0/6</div>
+        <div class="stat-label">Retos Restaurados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="c-tiempo">00:00</div>
+        <div class="stat-label">Tiempo Invertido</div>
+      </div>
     </div>
+    
+    <button class="btn-reiniciar" id="btn-reinicio">NUEVA SIMULACIÓN</button>
   </div>
 
-  <main style="width: 100%; max-width: 800px; display:flex; flex-direction:column; gap:1.5rem;">
-    <div id="card-estado" class="cierre-card" role="main">
-      <div id="cierre-icon-nivel" aria-hidden="true" style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
-      <p class="state-badge success">Evaluación del Sistema</p>
-      <h1 class="main-title" id="cierre-nivel">Cargando...</h1>
-      <p class="cierre-message" id="cierre-mensaje">Obteniendo informe...</p>
+  <script>
+    const TOTAL_RETOS = 6;
+    const DURATION_SEC = 45 * 60;
+    
+    function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
 
-      <div class="stats">
-        <div class="stat-card">
-          <span class="label">Retos Superados</span>
-          <span class="value" id="cierre-resueltos" style="color:var(--success)">0 / 6</span>
-        </div>
-        <div class="stat-card">
-          <span class="label">Tiempo Empleado</span>
-          <span class="value" id="cierre-tiempo">00:00</span>
-        </div>
-        <div class="stat-card">
-          <span class="label">Penalizaciones</span>
-          <span class="value" id="cierre-penalizacion" style="color:var(--danger)">00:00</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="cierre-card" style="text-align: left;">
-      <h2 style="color: var(--accent); font-size: 1.2rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">Desempeño Analítico</h2>
-      <ul id="retro-lista" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; margin-top:1.5rem;">
-      </ul>
-      <div style="margin-top: 2.5rem; text-align: center;">
-        <button id="btn-reiniciar-2" class="btn btn-primary">↺ Volver a jugar</button>
-      </div>
-    </div>
-  </main>
-
-  <script src="js/gameEngine.js"></script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let st = {startTime:0, resueltos:[], penalizacion:0};
+        try { st = JSON.parse(sessionStorage.getItem('er-state')) || st; } catch(e){}
+        
+        const resueltosN = (st.resueltos || []).length;
+        const elapsedSec = st.startTime ? Math.min(Math.floor((Date.now() - st.startTime) / 1000), DURATION_SEC) : 0;
+        
+        let nivel, msg, icon;
+        if(resueltosN === TOTAL_RETOS) {
+            nivel = "SISTEMA 100% RESTAURADO";
+            icon = "⚡";
+            msg = "Has recuperado el control total del algoritmo. Eres una leyenda del álgebra escolar.";
+        } else if (resueltosN >= 4) {
+            nivel = "EXPERTO DIGITAL";
+            icon = "⭐";
+            msg = `Restauraste ${resueltosN} sectores, pero el sistema aún tiene fallas. Buen trabajo, faltó poco.`;
+        } else {
+            nivel = "MISIÓN FALLIDA";
+            icon = "⚠️";
+            msg = "El tiempo se agotó o la penalización fue demasiada. El sistema ha bloqueado el acceso. ¡Inténtalo de nuevo!";
+        }
+        
+        document.getElementById('c-nivel').textContent = nivel;
+        document.getElementById('c-icon').textContent = icon;
+        document.getElementById('c-msg').textContent = msg;
+        document.getElementById('c-resueltos').textContent = `${resueltosN}/${TOTAL_RETOS}`;
+        document.getElementById('c-tiempo').textContent = formatTime(elapsedSec);
+        
+        if (nivel === "MISIÓN FALLIDA") {
+            document.getElementById('c-resueltos').style.color = "var(--red)";
+            document.getElementById('c-nivel').style.color = "var(--red)";
+        }
+        
+        document.getElementById('btn-reinicio').addEventListener('click', () => {
+            sessionStorage.removeItem('er-state');
+            window.location.href = 'index.html';
+        });
+    });
+  </script>
 </body>
 </html>
