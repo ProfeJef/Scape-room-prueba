@@ -1,176 +1,105 @@
-<!DOCTYPE html>
-<html lang="es" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa del Sistema — Escape Room Algebraico</title>
-  
-  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-font-smoothing: antialiased; }
-    :root {
-      --bg:#0a0c10; --surface:#0f1117; --surface-2:#151820; --border:rgba(255,255,255,.07);
-      --accent:#38BDF8; --accent-2:#818CF8; --gold:#F59E0B; --green:#34D399; --pink:#F472B6; --red:#F87171;
-      --text:#e2e8f0; --muted:#64748b; --font-body:'Satoshi',sans-serif; --font-mono:'Orbitron',monospace;
-      --radius:12px; --radius-lg:20px;
-    }
-    body { font-family:var(--font-body); background:var(--bg); color:var(--text); min-height:100dvh; display:flex; flex-direction:column; overflow-x:hidden; }
-    
-    .bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
-    .bg-glow{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(56,189,248,.05) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 85% 80%,rgba(129,140,248,.04) 0%,transparent 60%);pointer-events:none}
-
-    header {
-      position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between;
-      padding:.75rem 1.25rem; background:rgba(10,12,16,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--border);
-    }
-    .header-left{display:flex;align-items:center;gap:.75rem}
-    .header-logo{font-family:var(--font-mono);font-size:.8rem;font-weight:700;letter-spacing:.08em;color:var(--accent)}
-    .header-title{font-size:.82rem;color:var(--muted)}
-    .header-right{display:flex;align-items:center;gap:1rem}
-    .clock-wrap{display:flex;align-items:center;gap:.5rem;padding:.4rem .9rem;background:var(--surface-2);border:1px solid var(--border);border-radius:999px}
-    #clock{font-family:var(--font-mono);font-size:.95rem;font-weight:700;color:var(--green);min-width:5ch}
-    #clock.warning{color:var(--gold)} #clock.danger{color:var(--red)}
-    .progreso-wrap{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted)}
-    .barra-outer{width:90px;height:6px;background:var(--surface-2);border-radius:999px;overflow:hidden}
-    #progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s ease}
-    #progress-txt{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);font-weight:700}
-
-    main { position:relative; z-index:1; flex:1; max-width: 1000px; width: 100%; margin: 0 auto; padding: 2rem; }
-    .mapa-titulo { font-family: var(--font-mono); font-size: 1.8rem; margin-bottom: 0.5rem; }
-    .mapa-desc { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
-    
-    .retos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-    .nodo {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; position: relative;
-    }
-    .nodo-eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-    .nodo-titulo { font-family: var(--font-mono); font-size: 1.1rem; margin-bottom: 2rem; }
-    .nodo-status { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-
-    /* Estados nodo */
-    .nodo.locked { opacity: 0.5; pointer-events: none; background: rgba(255,255,255,0.01); }
-    .nodo.active { border-color: rgba(56,189,248,0.5); box-shadow: 0 0 20px rgba(56,189,248,0.1); }
-    .nodo.active:hover { transform: translateY(-3px); border-color: var(--accent); }
-    .nodo.active .nodo-eyebrow { color: var(--accent); }
-    .nodo.active .nodo-status { color: var(--accent); }
-    .nodo.done { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.03); }
-    .nodo.done .nodo-eyebrow { color: var(--green); }
-    .nodo.done .nodo-status { color: var(--green); }
-    
-    footer{position:relative;z-index:1;text-align:center;padding:1rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--border)}
-    footer span{color:var(--accent)}
-  </style>
-</head>
-<body>
-  <div class="bg-grid" aria-hidden="true"></div>
-  <div class="bg-glow" aria-hidden="true"></div>
-
-  <header>
-    <div class="header-left">
-      <span class="header-logo">EAP·2026</span>
-      <span class="header-title">Navegación del sistema</span>
-    </div>
-    <div class="header-right">
-      <div class="clock-wrap"><span aria-hidden="true">⏱</span><span id="clock">45:00</span></div>
-      <div class="progreso-wrap">
-        <div class="barra-outer"><div id="progress-bar"></div></div>
-        <span id="progress-txt">0/6</span>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <h1 class="mapa-titulo">Nodos del Sistema</h1>
-    <p class="mapa-desc">Selecciona el reto activo para restablecer el algoritmo paso a paso.</p>
-    
-    <div class="retos-grid" id="grid">
-      <!-- Los nodos se inyectan con el script para pintar el estado exacto -->
-    </div>
-  </main>
-  
-  <footer>Desarrollado por <span>Eduquemos con TIC</span> · Matemáticas 8° · 2026</footer>
-
   <script>
-    const NOMBRES = [
-      "El mural que nadie midió", "El terreno que se recortó", "El contenedor de doble cara",
-      "El tanque de agua", "El festival de matemáticas", "La fórmula justa del sistema"
-    ];
     const TOTAL_RETOS = 6;
     const DURATION_SEC = 45 * 60;
-    
+
     function loadState(){
       try { return JSON.parse(sessionStorage.getItem('er-state')) || {startTime:Date.now(),resueltos:[],penalizacion:0}; }
       catch(e){ return {startTime:Date.now(),resueltos:[],penalizacion:0}; }
     }
     
-    function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
-    function getTiempoRestante(){ const st=loadState(); const elapsed=Math.floor((Date.now()-st.startTime)/1000); return Math.max(0, DURATION_SEC - elapsed - (st.penalizacion||0)); }
-
-    function renderMapa() {
-        const st = loadState();
-        const grid = document.getElementById('grid');
-        const resueltos = st.resueltos || [];
-        const siguiente = resueltos.length + 1;
-        
-        let html = '';
-        for(let i=1; i<=TOTAL_RETOS; i++) {
-            let clase = 'locked';
-            let status = '🔒 Bloqueado';
-            let link = '#';
-            
-            if(resueltos.includes(i)) {
-                clase = 'done';
-                status = '✅ Restaurado';
-                link = `reto.html?id=${i}`;
-            } else if (i === siguiente) {
-                clase = 'active';
-                status = '🔓 Disponible';
-                link = `reto.html?id=${i}`;
-            }
-            
-            html += `
-                <a href="${link}" class="nodo ${clase}">
-                    <div class="nodo-eyebrow">RETO ${i}</div>
-                    <div class="nodo-titulo">${NOMBRES[i-1]}</div>
-                    <div class="nodo-status">${status}</div>
-                </a>
-            `;
-        }
-        grid.innerHTML = html;
-        
-        // Reloj
-        const tick = () => {
-          const remaining = getTiempoRestante();
-          const clock = document.getElementById('clock');
-          clock.textContent = formatTime(remaining);
-          clock.classList.remove('warning','danger');
-          if(remaining <= 60) clock.classList.add('danger');
-          else if(remaining <= 300) clock.classList.add('warning');
-          
-          if(st.penalizacion > 0 && !document.getElementById('pen-txt')) {
-              clock.insertAdjacentHTML('afterend', `<span id="pen-txt" style="color:var(--red); font-size:0.75rem; margin-left:8px;">-${formatTime(st.penalizacion)}</span>`);
-          }
-          const pct = Math.round((resueltos.length / TOTAL_RETOS) * 100);
-          document.getElementById('progress-bar').style.width = pct + '%';
-          document.getElementById('progress-txt').textContent = resueltos.length + '/' + TOTAL_RETOS;
-          
-          if(remaining <= 0 && resueltos.length < TOTAL_RETOS) window.location.href = 'cierre.html';
-        };
-        tick(); setInterval(tick, 1000);
-        
-        // Si ya acabo todos
-        if(resueltos.length >= TOTAL_RETOS) window.location.href = 'cierre.html';
+    function formatTime(sec){ 
+      const m=Math.floor(sec/60), s=sec%60; 
+      return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); 
     }
     
+    function getTiempoRestante(){ 
+      const st=loadState(); 
+      const elapsed=Math.floor((Date.now()-st.startTime)/1000); 
+      return Math.max(0, DURATION_SEC - elapsed - (st.penalizacion||0)); 
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        const st = loadState();
-        if(!st.startTime) { window.location.href = 'index.html'; return; }
-        renderMapa();
+      const st = loadState();
+      if(!st.startTime) { window.location.href = 'index.html'; return; }
+
+      // ─── 1. RENDERIZAR MAPA (Candados y Conectores) ───
+      const resueltos = Array.isArray(st.resueltos) ? st.resueltos : [];
+      const siguiente = resueltos.length + 1;
+
+      for (let id = 1; id <= TOTAL_RETOS; id++) {
+        const nodo = document.getElementById('nodo-' + id);
+        if (!nodo) continue;
+
+        nodo.classList.remove('completed', 'active-node', 'locked');
+        const badge = nodo.querySelector('.nodo-status-label');
+
+        if (resueltos.includes(id)) {
+          // COMPLETADO
+          nodo.classList.add('completed');
+          nodo.href = 'reto.html?id=' + id;
+          nodo.removeAttribute('aria-disabled');
+          if (badge) {
+            badge.className = 'nodo-status-label status-completed';
+            badge.textContent = '✓ Completado';
+          }
+          // Conector previo encendido
+          const lineEl = document.getElementById('line-' + id);
+          const arrowEl = document.getElementById('arrow-' + id);
+          if (lineEl) lineEl.classList.add('done');
+          if (arrowEl) arrowEl.classList.add('done');
+
+        } else if (id === siguiente) {
+          // DISPONIBLE
+          nodo.classList.add('active-node');
+          nodo.href = 'reto.html?id=' + id;
+          nodo.removeAttribute('aria-disabled');
+          if (badge) {
+            badge.className = 'nodo-status-label status-active';
+            badge.textContent = id === 6 ? '🔓 ¡Misión final!' : '🔓 Disponible';
+          }
+
+        } else {
+          // BLOQUEADO
+          nodo.classList.add('locked');
+          nodo.href = '#';
+          nodo.setAttribute('aria-disabled', 'true');
+          if (badge) {
+            badge.className = 'nodo-status-label status-locked';
+            badge.textContent = '🔒 Bloqueado';
+          }
+        }
+      }
+
+      // ─── 2. MANEJO DEL RELOJ Y PENALIZACIÓN ───
+      const tick = () => {
+        const remaining = getTiempoRestante();
+        const clock = document.getElementById('clock');
+        
+        clock.textContent = formatTime(remaining);
+        clock.classList.remove('warning','danger');
+        if(remaining <= 60) clock.classList.add('danger');
+        else if(remaining <= 300) clock.classList.add('warning');
+
+        // Mostrar penalización si existe
+        const penTxt = document.getElementById('penalizacion-txt');
+        if(st.penalizacion > 0) {
+            penTxt.classList.remove('hidden');
+            penTxt.textContent = `-${formatTime(st.penalizacion)}`;
+        }
+
+        // Progreso de la barra superior
+        const pct = Math.round((resueltos.length / TOTAL_RETOS) * 100);
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('progress-txt').textContent = resueltos.length + '/' + TOTAL_RETOS;
+
+        // Redirección si se acaba el tiempo o si ya terminó todo
+        if(remaining <= 0 || resueltos.length >= TOTAL_RETOS) {
+            window.location.href = 'cierre.html';
+        }
+      };
+      
+      tick(); 
+      setInterval(tick, 1000);
     });
   </script>
 </body>
