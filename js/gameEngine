@@ -1,9 +1,3 @@
-// ============================================================
-//  gameEngine.js  —  PARTE 1 / 5
-//  Base de datos de RETOS completa
-//  Escape Room Educativo · Matemáticas 8° · Binomios
-// ============================================================
-
 const RETOS = [
 
   // ─── RETO 1 · Tipo 1 (Selección múltiple) ────────────────
@@ -1110,7 +1104,3 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ============================================================
-//  FIN DE gameEngine.js
-//  Archivo unificado en 5 partes
-// ============================================================
