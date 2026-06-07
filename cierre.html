@@ -34,6 +34,37 @@
       background-size: 60px 60px; pointer-events: none;
     }
 
+    /* ── HEADER PREMIUM ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      background: rgba(10,12,16,0.88); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .logo-link { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+    
+    /* Configuración específica para el SVG en el Header */
+    .logo-svg { 
+      width: 40px; 
+      height: 40px; 
+      display: block;
+      filter: drop-shadow(0 0 4px rgba(56,189,248,0.3));
+    }
+    
+    .logo-text {
+      font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; letter-spacing: 0.05em;
+      background: linear-gradient(90deg, #00FFFF, #B026FF);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: flex; align-items: center;
+    }
+    .logo-text span {
+      font-family: var(--font-body); font-size: 0.75rem; font-weight: 500;
+      color: #E2E8F0; -webkit-text-fill-color: #E2E8F0;
+      margin: 0 0.35rem; text-transform: lowercase;
+    }
+
     main {
       position: relative; z-index: 1; flex: 1;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -131,12 +162,42 @@
     @media (max-width: 520px) {
       .card-body { padding: 2rem 1.25rem; }
       .stats-global { grid-template-columns: 1fr; }
+      header{padding:.75rem .8rem} .logo-text span { display: none; }
     }
   </style>
 </head>
 <body>
 
   <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- ── HEADER PREMIUM ── -->
+  <header>
+    <div class="header-left">
+      <a href="index.html" class="logo-link">
+        
+        <!-- ÍCONO SVG CEREBRO-CIRCUITO -->
+        <svg class="logo-svg" viewBox="50 50 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g>
+            <circle cx="150" cy="150" r="90" fill="none" stroke="#00FFFF" stroke-width="2" stroke-dasharray="12 6 3 6" opacity="0.4"/>
+            <path d="M 150 80 L 90 105 L 150 130 L 210 105 Z" fill="none" stroke="#00FFFF" stroke-width="5" stroke-linejoin="round"/>
+            <path d="M 120 120 V 145 L 150 158 L 180 145 V 120" fill="none" stroke="#00FFFF" stroke-width="5" stroke-linejoin="round"/>
+            <g stroke="#00FFFF" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 145 135 C 120 130, 100 140, 95 155 C 85 155, 80 170, 90 180 C 80 190, 85 210, 100 215 C 95 225, 110 235, 125 230 C 135 235, 145 225, 145 215 Z"/>
+            </g>
+            <g stroke="#B026FF" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 155 135 V 235"/>
+              <path d="M 155 155 H 170 L 180 145 H 195"/> <circle cx="195" cy="145" r="5" fill="#B026FF"/>
+              <path d="M 155 175 H 165 L 175 185 H 205"/> <circle cx="205" cy="185" r="5" fill="#B026FF"/>
+              <path d="M 155 195 H 175 L 185 205 H 195"/> <circle cx="195" cy="205" r="5" fill="#B026FF"/>
+            </g>
+          </g>
+        </svg>
+
+        <!-- TEXTO DEL LOGO -->
+        <span class="logo-text">Eduquémonos<span>con</span>TIC</span>
+      </a>
+    </div>
+  </header>
 
   <main>
     <div id="resultado-card" class="card" role="main">
