@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reto — Escape Room Algebraico</title>
+  <title>Misión Finalizada — Escape Room Algebraico</title>
 
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,11 +58,11 @@
       display: flex; gap: 1.2rem; margin-bottom: 1.2rem; align-items: stretch;
     }
     .narrativa-img {
-      flex-shrink: 0; width: 140px; background: var(--surface-2); border: 1px solid var(--border);
+      flex-shrink: 0; width: 170px; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
       border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      overflow: hidden; padding: 10px;
+      padding: 15px; position: relative;
     }
-    .narrativa-img svg { width: 100%; height: auto; max-height: 120px; }
+    .narrativa-img svg { width: 100%; height: auto; max-height: 140px; }
     .narrativa-text { flex: 1; }
     
     .narrativa{font-size:.95rem;line-height:1.72;color:#9fb0c6;margin-bottom:0}
@@ -138,8 +138,8 @@
     @media (max-width: 860px){
       .reto-shell{grid-template-columns:1fr}
       .narrativa-container { flex-direction: column; }
-      .narrativa-img { width: 100%; height: 120px; }
-      .narrativa-img svg { height: 100px; max-width: 100%; }
+      .narrativa-img { width: 100%; height: 160px; }
+      .narrativa-img svg { height: 140px; max-width: 100%; }
     }
     @media (max-width: 520px){
       header{padding:.75rem .8rem}.header-title{display:none}.barra-outer{width:56px}
@@ -173,7 +173,6 @@
           <h1 id="reto-titulo" class="titulo">Título del reto</h1>
           <div id="reto-tags" class="tags"></div>
           
-          <!-- Contenedor para Imagen y Narrativa -->
           <div class="narrativa-container">
             <div id="reto-imagen-container" class="narrativa-img">
               <!-- La imagen SVG se inyectará aquí -->
@@ -219,12 +218,30 @@
   <footer>Desarrollado por <span>Eduquemos con TIC</span> · Matemáticas 8° · 2026</footer>
 
   <script>
-    // ─── 1. CORRECCIÓN MATEMÁTICA E INYECCIÓN DE IMÁGENES SVG ───
+    // ─── 1. CORRECCIÓN MATEMÁTICA E INYECCIÓN DE IMÁGENES SVG PRECISAS ───
     const RETOS = [
       {
         id:1, tipo:1, titulo:'El mural que nadie midió', eyebrow:'Nivel 1 · Cuadrado de suma',
         tags:[{label:'Básico',cls:'rtag-green'},{label:'(a+b)²',cls:'rtag-purple'},{label:'Área',cls:'rtag-gold'}],
-        imagen: `<svg viewBox="0 0 100 100" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="20" y="20" width="60" height="60" rx="4" stroke-dasharray="4 4" /><path d="M20 50h60M50 20v60" opacity="0.5"/><text x="50" y="15" font-size="10" fill="var(--text)" stroke="none" text-anchor="middle">3x + 5</text></svg>`,
+        imagen: `
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                <rect width="10" height="10" fill="none" stroke="rgba(56,189,248,0.1)"/>
+              </pattern>
+            </defs>
+            <rect x="20" y="20" width="80" height="80" fill="url(#grid)" stroke="var(--accent)" stroke-width="2"/>
+            <line x1="75" y1="20" x2="75" y2="100" stroke="var(--accent)" stroke-dasharray="4" stroke-width="1.5"/>
+            <line x1="20" y1="75" x2="100" y2="75" stroke="var(--accent)" stroke-dasharray="4" stroke-width="1.5"/>
+            
+            <text x="47" y="52" font-size="12" fill="var(--accent)" font-family="monospace" text-anchor="middle">(3x)²</text>
+            <text x="87" y="52" font-size="10" fill="var(--text)" font-family="monospace" text-anchor="middle">15x</text>
+            <text x="47" y="91" font-size="10" fill="var(--text)" font-family="monospace" text-anchor="middle">15x</text>
+            <text x="87" y="91" font-size="10" fill="var(--text)" font-family="monospace" text-anchor="middle">5²</text>
+            
+            <path d="M20 10 v-4 M100 10 v-4 M20 8 h80" stroke="var(--muted)" fill="none"/>
+            <text x="60" y="5" font-size="9" fill="var(--muted)" font-family="monospace" text-anchor="middle">3x + 5</text>
+          </svg>`,
         narrativa:'El software de infraestructura aprobó el presupuesto para un mural artístico cuyo lado mide <strong>(3x + 5)</strong> metros. Sin embargo, el algoritmo calculó el área usando la expresión <em>9x² + 25</em>, ignorando la zona central. Corrige el cálculo real del área.',
         enunciado:'Desarrolla correctamente el producto notable <strong>(3x + 5)²</strong>.',
         opciones:[
@@ -237,7 +254,24 @@
       {
         id:2, tipo:2, titulo:'El terreno que se recortó', eyebrow:'Nivel 2 · Cuadrado de diferencia',
         tags:[{label:'Fácil',cls:'rtag-green'},{label:'(a-b)²',cls:'rtag-purple'},{label:'Espacial',cls:'rtag-pink'}],
-        imagen: `<svg viewBox="0 0 100 100" fill="none" stroke="var(--pink)" stroke-width="2"><rect x="15" y="15" width="70" height="70" rx="4" opacity="0.3"/><rect x="15" y="15" width="50" height="50" rx="4" fill="rgba(244,114,182,0.1)"/><path d="M65 15v50M15 65h50" stroke-dasharray="4 4" opacity="0.7"/><text x="40" y="80" font-size="10" fill="var(--text)" stroke="none" text-anchor="middle">5x - 4</text></svg>`,
+        imagen: `
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="80" height="80" fill="rgba(244,114,182,0.05)" stroke="var(--muted)" stroke-dasharray="2" stroke-width="1"/>
+            <rect x="20" y="20" width="55" height="55" fill="rgba(244,114,182,0.2)" stroke="var(--pink)" stroke-width="2"/>
+            
+            <!-- Cotas -->
+            <path d="M20 10 v-4 M100 10 v-4 M20 8 h80" stroke="var(--muted)" fill="none"/>
+            <text x="60" y="5" font-size="9" fill="var(--muted)" font-family="monospace" text-anchor="middle">5x</text>
+            
+            <path d="M10 20 h-4 M10 100 h-4 M8 20 v80" stroke="var(--muted)" fill="none"/>
+            <text x="3" y="60" font-size="9" fill="var(--muted)" font-family="monospace" text-anchor="middle" transform="rotate(-90 3,60)">5x</text>
+
+            <!-- Recortes -->
+            <text x="87" y="50" font-size="9" fill="var(--red)" font-family="monospace" text-anchor="middle">-4</text>
+            <text x="47" y="90" font-size="9" fill="var(--red)" font-family="monospace" text-anchor="middle">-4</text>
+            
+            <text x="47" y="50" font-size="11" fill="var(--pink)" font-family="monospace" text-anchor="middle">(5x - 4)²</text>
+          </svg>`,
         narrativa:'El sistema redujo las dimensiones de un huerto escolar a <strong>(5x - 4)</strong>. Registró el área como <em>25x² + 16</em>, ignorando el cambio intermedio. Restaura el cálculo correcto.',
         enunciado:'Arrastra el desarrollo correcto para <strong>(5x - 4)²</strong>.',
         opciones:[
@@ -250,7 +284,23 @@
       {
         id:3, tipo:3, titulo:'El contenedor de doble cara', eyebrow:'Nivel 3 · Diferencia de cuadrados',
         tags:[{label:'Medio',cls:'rtag-gold'},{label:'(a+b)(a-b)',cls:'rtag-purple'},{label:'Conjugados',cls:'rtag-pink'}],
-        imagen: `<svg viewBox="0 0 100 100" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M20 30L80 30" /><path d="M20 70L80 70" stroke-dasharray="4 4"/><circle cx="50" cy="50" r="15" fill="rgba(245,158,11,0.1)"/><text x="50" y="25" font-size="10" fill="var(--text)" stroke="none" text-anchor="middle">7x + 6</text><text x="50" y="85" font-size="10" fill="var(--text)" stroke="none" text-anchor="middle">7x - 6</text></svg>`,
+        imagen: `
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bloque Suma -->
+            <rect x="20" y="30" width="80" height="25" fill="rgba(245,158,11,0.15)" stroke="var(--gold)" stroke-width="2"/>
+            <line x1="75" y1="30" x2="75" y2="55" stroke="var(--gold)" stroke-width="1.5"/>
+            <text x="47" y="47" font-size="11" fill="var(--text)" font-family="monospace" text-anchor="middle">7x</text>
+            <text x="87" y="47" font-size="11" fill="var(--gold)" font-family="monospace" text-anchor="middle">+ 6</text>
+            
+            <!-- Operador central -->
+            <text x="60" y="68" font-size="14" fill="var(--muted)" font-family="monospace" text-anchor="middle">✖</text>
+
+            <!-- Bloque Resta -->
+            <rect x="20" y="75" width="80" height="25" fill="rgba(245,158,11,0.05)" stroke="var(--gold)" stroke-width="2" stroke-dasharray="3"/>
+            <line x1="75" y1="75" x2="75" y2="100" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="3"/>
+            <text x="47" y="92" font-size="11" fill="var(--text)" font-family="monospace" text-anchor="middle">7x</text>
+            <text x="87" y="92" font-size="11" fill="var(--red)" font-family="monospace" text-anchor="middle">- 6</text>
+          </svg>`,
         narrativa:'La plataforma expandió <strong>(7x + 6)(7x - 6)</strong> y dejó una expresión con términos lineales que debían anularse. Identifica la simplificación válida.',
         enunciado:'Escribe la palabra <strong>correcto</strong> frente a la única simplificación válida.',
         opciones:[
@@ -263,7 +313,30 @@
       {
         id:4, tipo:2, titulo:'El tanque de agua del colegio', eyebrow:'Nivel 4 · Cubo de binomio',
         tags:[{label:'Medio-alto',cls:'rtag-gold'},{label:'(a+b)³',cls:'rtag-purple'},{label:'Volumen',cls:'rtag-pink'}],
-        imagen: `<svg viewBox="0 0 100 100" fill="none" stroke="var(--accent-2)" stroke-width="2"><path d="M30 30l15-15h30l-15 15H30z" fill="rgba(129,140,248,0.1)"/><path d="M75 15v40l-15 15M30 30v40l15 15h30"/><path d="M45 70v15M30 70h15" opacity="0.5"/><text x="45" y="85" font-size="8" fill="var(--text)" stroke="none" text-anchor="middle">2x + 3</text></svg>`,
+        imagen: `
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(60, 25)">
+              <!-- Cubo en perspectiva isométrica -->
+              <!-- Cara superior -->
+              <path d="M0,0 L-35,17.5 L0,35 L35,17.5 Z" fill="rgba(129,140,248,0.2)" stroke="var(--accent-2)" stroke-width="1.5"/>
+              <!-- Cara izquierda -->
+              <path d="M-35,17.5 L-35,62.5 L0,80 L0,35 Z" fill="rgba(129,140,248,0.1)" stroke="var(--accent-2)" stroke-width="1.5"/>
+              <!-- Cara derecha -->
+              <path d="M0,35 L0,80 L35,62.5 L35,17.5 Z" fill="rgba(129,140,248,0.3)" stroke="var(--accent-2)" stroke-width="1.5"/>
+              
+              <!-- Líneas indicando 2x+3 en las tres dimensiones -->
+              <path d="M-40,15 L-5, -2.5" stroke="var(--muted)" stroke-dasharray="2"/>
+              <text x="-35" y="5" font-size="8" fill="var(--text)" font-family="monospace" text-anchor="middle">2x+3</text>
+              
+              <path d="M40,15 L5, -2.5" stroke="var(--muted)" stroke-dasharray="2"/>
+              <text x="35" y="5" font-size="8" fill="var(--text)" font-family="monospace" text-anchor="middle">2x+3</text>
+              
+              <path d="M45,20 L45, 60" stroke="var(--muted)" stroke-dasharray="2"/>
+              <text x="60" y="42" font-size="8" fill="var(--text)" font-family="monospace" text-anchor="middle">2x+3</text>
+              
+              <text x="0" y="45" font-size="12" font-weight="bold" fill="var(--accent-2)" font-family="monospace" text-anchor="middle">V = ?</text>
+            </g>
+          </svg>`,
         narrativa:'La capacidad de un tanque con arista <strong>(2x + 3)</strong> fue subestimada por el sistema. El cálculo correcto requiere el desarrollo completo del cubo del binomio.',
         enunciado:'Arrastra la opción correcta para <strong>(2x + 3)³</strong>.',
         opciones:[
@@ -276,7 +349,22 @@
       {
         id:5, tipo:5, titulo:'El festival de matemáticas', eyebrow:'Nivel 5 · Factorización compuesta',
         tags:[{label:'Alto',cls:'rtag-pink'},{label:'Factor común',cls:'rtag-purple'},{label:'Dif. cuadrados',cls:'rtag-gold'}],
-        imagen: `<svg viewBox="0 0 100 100" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="35" cy="50" r="20" stroke-dasharray="2 4"/><circle cx="65" cy="50" r="20" stroke-dasharray="2 4"/><path d="M50 30v40" opacity="0.3"/><text x="50" y="85" font-size="10" fill="var(--text)" stroke="none" text-anchor="middle">50x³ - 72x</text></svg>`,
+        imagen: `
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="80" height="30" fill="rgba(52,211,153,0.1)" stroke="var(--green)" stroke-width="2" rx="4"/>
+            <text x="60" y="40" font-size="12" fill="var(--text)" font-family="monospace" text-anchor="middle">50x³ - 72x</text>
+            
+            <!-- Llave de extracción -->
+            <path d="M60 50 v15 M40 65 h40" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+            <path d="M40 65 v10 M80 65 v10" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+            <path d="M40 75 v15 M80 75 v15" stroke="var(--green)" stroke-dasharray="2" stroke-width="1.5" fill="none"/>
+            
+            <rect x="30" y="90" width="20" height="20" fill="rgba(52,211,153,0.2)" stroke="var(--green)" rx="2"/>
+            <rect x="70" y="90" width="20" height="20" fill="rgba(52,211,153,0.2)" stroke="var(--green)" rx="2"/>
+            
+            <text x="40" y="104" font-size="9" fill="var(--text)" font-family="monospace" text-anchor="middle">2x</text>
+            <text x="80" y="104" font-size="9" fill="var(--text)" font-family="monospace" text-anchor="middle">(?)</text>
+          </svg>`,
         narrativa:'La expresión <strong>50x³ - 72x</strong> fue catalogada como irreducible. Debes factorizarla completamente para reactivar los fondos del festival.',
         enunciado:'Factoriza completamente la expresión. <br><small style="color:#f6c56c;display:block;margin-top:8px">Escribe sin espacios. Formato válido: 2x(5x+6)(5x-6)</small>',
         respuestaExacta:['2x(5x+6)(5x-6)','2x(5x-6)(5x+6)'],
@@ -285,7 +373,19 @@
       {
         id:6, tipo:6, titulo:'La fórmula justa del sistema', eyebrow:'Nivel 6 · Misión final · Experto',
         tags:[{label:'Experto',cls:'rtag-pink'},{label:'Misión final',cls:'rtag-gold'},{label:'Código',cls:'rtag-purple'}],
-        imagen: `<svg viewBox="0 0 100 100" fill="none" stroke="var(--red)" stroke-width="2"><rect x="25" y="25" width="50" height="50" rx="8"/><path d="M35 50h30M50 35v30" /><circle cx="50" cy="50" r="5" fill="var(--red)"/><text x="50" y="15" font-size="10" fill="var(--text)" stroke="none" text-anchor="middle">Desbloqueo</text></svg>`,
+        imagen: `
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="10" width="100" height="100" fill="rgba(239,68,68,0.05)" stroke="var(--red)" stroke-width="2" stroke-dasharray="4"/>
+            <text x="60" y="25" font-size="10" fill="var(--red)" font-family="monospace" text-anchor="middle">SYSTEM.KERNEL.OVERRIDE</text>
+            
+            <rect x="25" y="40" width="70" height="30" fill="var(--surface)" stroke="var(--muted)" stroke-width="1" rx="4"/>
+            <text x="60" y="59" font-size="12" fill="var(--text)" font-family="monospace" text-anchor="middle">(½x + 4)²</text>
+            
+            <rect x="50" y="80" width="20" height="20" fill="rgba(239,68,68,0.2)" stroke="var(--red)" stroke-width="1.5" rx="4"/>
+            <text x="60" y="94" font-size="10" fill="var(--red)" font-family="monospace" text-anchor="middle">-16</text>
+            
+            <path d="M60 70 v10" stroke="var(--muted)" stroke-width="2" fill="none"/>
+          </svg>`,
         narrativa:'El sistema redujo erróneamente la ecuación <strong>(½x + 4)² - 16</strong> a <em>¼x²</em>. Encuentra la simplificación correcta para obtener el código final.',
         enunciado:'Desarrolla y simplifica al máximo la expresión para hallar el código de desbloqueo final.',
         opciones:[
@@ -349,12 +449,12 @@
 
     function construirPista(reto){
       switch(reto.id){
-        case 1: return '<strong>Pista:</strong> En el cuadrado de un binomio siempre aparece el término central <em>2ab</em>.';
-        case 2: return '<strong>Pista:</strong> En <em>(a-b)²</em>, el término central es negativo: <em>-2ab</em>.';
-        case 3: return '<strong>Pista:</strong> En binomios conjugados los términos lineales se eliminan.';
-        case 4: return '<strong>Pista:</strong> Usa el patrón del cubo del binomio: <em>a³ + 3a²b + 3ab² + b³</em>.';
-        case 5: return '<strong>Pista:</strong> Primero saca factor común y luego revisa si queda diferencia de cuadrados.';
-        case 6: return '<strong>Pista:</strong> Desarrolla el cuadrado del binomio y después simplifica con el término exterior.';
+        case 1: return '<strong>Pista:</strong> Observa la imagen. Hay 4 áreas: (3x)², dos áreas de (3x)(5) y una de 5².';
+        case 2: return '<strong>Pista:</strong> En la figura, se recorta 4. En <em>(a-b)²</em>, el término central es negativo: <em>-2ab</em>.';
+        case 3: return '<strong>Pista:</strong> Mira los bloques. El +6 y el -6 al multiplicarse por 7x se anulan entre sí.';
+        case 4: return '<strong>Pista:</strong> Para hallar el volumen (V) aplica la fórmula: <em>a³ + 3a²b + 3ab² + b³</em>.';
+        case 5: return '<strong>Pista:</strong> Como muestra el esquema, primero saca el factor común 2x y luego observa qué queda adentro.';
+        case 6: return '<strong>Pista:</strong> Desarrolla el binomio completo primero, y al final réstale el bloque de -16.';
         default: return '<strong>Pista:</strong> Revisa el patrón algebraico y el signo del término medio.';
       }
     }
@@ -410,7 +510,6 @@
       $('reto-tags').innerHTML = reto.tags.map(t => `<span class="rtag ${t.cls}">${t.label}</span>`).join('');
       $('hint-box').innerHTML = construirPista(reto);
       
-      // Inyectar imagen
       $('reto-imagen-container').innerHTML = reto.imagen;
 
       const opcionesEl = $('reto-opciones');
